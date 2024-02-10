@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#Backup data and configuration
+slapd-cli backup
+slapd-cli backupconfig
+
+#Clean old backup files
+find {{ base_dir }}/{{ backup_dir }} -type f -name "data-*" -mtime {{ backup_retention_days  }} -execdir rm {} +
+find {{ base_dir }}/{{ backup_dir }} -type f -name "config-*" -mtime {{ backup_retention_days  }} -execdir rm {} +

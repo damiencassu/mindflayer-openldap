@@ -1,0 +1,4 @@
+dn: olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcDbDirectory
+olcDbDirectory: {{ base_dir  }}/{{ data_dir }}

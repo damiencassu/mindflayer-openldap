@@ -10,6 +10,8 @@ Requirements
 
 This role has been tested with Ansible 2.14.13
 
+This role must be executed with root privileges
+
 Role Variables
 --------------
 
@@ -35,6 +37,13 @@ _For instance, ltb_repo_baseurl is used when executing INSTALL tasks (when do_in
 | INSTALL | log_dir | log | Name of the directory which will contain slapd log files |
 | INSTALL | backup_dir | backup | Name of the directory which will contain slapd backups |
 | INSTALL | log_file | slapd.log | Name of the slapd log file |
+| INSTALL | backup_retention_days | 7 | Number of days to keep old backups before their deletion |
+| INSTALL | backup_cron_month | * | Month cron metric to configure slapd conf and data backup scheduling |
+| INSTALL | backup_cron_day | * | Day cron metric to configure slapd conf and data backup scheduling |
+| INSTALL | backup_cron_weekday | * | Weekday cron metric to configure slapd conf and data backup scheduling |
+| INSTALL | backup_cron_hour | 03 | Hour cron metric to configure slapd conf and data backup scheduling |
+| INSTALL | backup_cron_minute | 00 | Minute cron metric to configure slapd conf and data backup scheduling |
+
 
 Dependencies
 ------------

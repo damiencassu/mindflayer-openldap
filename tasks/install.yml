@@ -15,7 +15,7 @@
   ansible.builtin.rpm_key:
     key: "{{ ltb_repo_remote_gpgkey }}"
       
-- name: Install OpenLDAP LTB 2.5 rpms
+- name: Install openldap LTB 2.5 rpms
   ansible.builtin.yum:
     name: 
       - openldap-ltb
@@ -28,19 +28,13 @@
     name: rsyslog
     state: installed
 
-- name: Stop and enable slapd-ltb service
-  ansible.builtin.service:
-    name: slapd-ltb
-    state: stopped
-    enabled: true
-
 - name: Check rsyslog is running and enabled
   ansible.builtin.service:
     name: rsyslog
     state: started
     enabled: true
 
-- name: Create OpenLDAP dedicated file system
+- name: Create openldap dedicated file system
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -53,7 +47,7 @@
     - "{{ base_dir }}/{{ data_dir }}"
     - "{{ base_dir }}/{{ backup_dir }}"
 
-- name: Create OpenLDAP log file system
+- name: Create openldap log file system
   ansible.builtin.file:
     path: "{{ base_dir }}/{{ log_dir }}"
     state: directory
@@ -62,12 +56,12 @@
     group: ldap
     setype: var_log_t
 
-- name: Add slapd-cli script and other slapd utilities in root PATH
+- name: Add slapd-cli script and other openldap utilities in root PATH
   ansible.builtin.blockinfile:
     block: |
       PATH=$PATH:/usr/local/openldap/sbin
       export PATH
-    marker: "# {mark} SLAPD-UTILITIES ANSIBLE MANAGED BLOCK"
+    marker: "# {mark} OPENLDAP-UTILITIES ANSIBLE MANAGED BLOCK"
     path: ~/.bashrc
     state: present
 
@@ -77,11 +71,53 @@
     regexp: "^BACKUP_PATH"
     line: "BACKUP_PATH=\"{{ base_dir }}/{{ backup_dir }}\""
 
-- name: Configure rsyslog to collect slapd logs
+- name: Reconfigure rsyslog openldap logs collection
   ansible.builtin.lineinfile:
     path: /etc/rsyslog.conf
     regexp: "^local4"
-    line: "local4.*  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}"
+    line: "if $syslogfacility-text == 'local4' and $programname == 'slapd' then  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}"
   notify:
     - restart rsyslog 
+
+- name: Reconfigure openldap logrotate
+  ansible.builtin.lineinfile:
+    path: /etc/logrotate.d/openldap
+    regexp: "^/var/log/openldap.log"
+    line: "{{ base_dir  }}/{{ log_dir }}/{{ log_file }} {"
+
+- name: Render openldap backup script
+  ansible.builtin.template:
+    src: backup_script.j2
+    dest: "{{ base_dir }}/{{ backup_dir }}/backup_script.sh"
+    mode: ug+rwx
+
+- name: Configure backup in root crontab
+  ansible.builtin.cron:
+    name: Openldap backup job
+    job: "{{ base_dir }}/{{ backup_dir }}/backup_script.sh"
+    month: "{{ backup_cron_month }}"
+    day: "{{ backup_cron_day }}"
+    weekday: "{{ backup_cron_weekday }}"
+    hour: "{{ backup_cron_hour }}"
+    minute: "{{ backup_cron_minute }}"
+    state: present
+
+- name: Render ldif for mdb database location update
+  ansible.builtin.template:
+    src: olcDbDirectory.j2
+    dest: "{{ base_dir }}/{{ backup_dir }}/olcDbDirectory.ldif"
+
+- name: Update mdb database location in openldap
+  ansible.builtin.command:
+    cmd: "ldapmodify -Y EXTERNAL -H ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi -f {{ base_dir }}/{{ backup_dir }}/olcDbDirectory.ldif"
+
+- name: Clean up unused files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ base_dir }}/{{ backup_dir }}/olcDbDirectory.ldif"
+    - /usr/local/openldap/var/openldap-data/data.mdb
+    - /usr/local/openldap/var/openldap-data/lock.mdb
+    - /var/log/openldap.log
 ...
