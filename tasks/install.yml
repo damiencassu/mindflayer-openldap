@@ -8,8 +8,8 @@
 
 - name: Download ltb repo gpg key
   ansible.builtin.get_url:
-      url: "{{ ltb_repo_remote_gpgkey }}"
-      dest: "{{ ltb_repo_gpgkey | regex_replace('^file://', '') }}"
+    url: "{{ ltb_repo_remote_gpgkey }}"
+    dest: "{{ ltb_repo_gpgkey | regex_replace('^file://', '') }}"
 
 - name: Import ltb repo gpg key to rpm database
   ansible.builtin.rpm_key:
@@ -22,4 +22,66 @@
       - openldap-ltb-contrib-overlays
       - openldap-ltb-mdb-utils
     state: installed
+
+- name: Install rsyslog if required
+  ansible.builtin.yum:
+    name: rsyslog
+    state: installed
+
+- name: Stop and enable slapd-ltb service
+  ansible.builtin.service:
+    name: slapd-ltb
+    state: stopped
+    enabled: true
+
+- name: Check rsyslog is running and enabled
+  ansible.builtin.service:
+    name: rsyslog
+    state: started
+    enabled: true
+
+- name: Create OpenLDAP dedicated file system
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+    setype: usr_t
+  loop:
+    - "{{ base_dir }}"
+    - "{{ base_dir }}/{{ data_dir }}"
+    - "{{ base_dir }}/{{ backup_dir }}"
+
+- name: Create OpenLDAP log file system
+  ansible.builtin.file:
+    path: "{{ base_dir }}/{{ log_dir }}"
+    state: directory
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+    setype: var_log_t
+
+- name: Add slapd-cli script and other slapd utilities in root PATH
+  ansible.builtin.blockinfile:
+    block: |
+      PATH=$PATH:/usr/local/openldap/sbin
+      export PATH
+    marker: "# {mark} SLAPD-UTILITIES ANSIBLE MANAGED BLOCK"
+    path: ~/.bashrc
+    state: present
+
+- name: Edit slapd-cli.conf file - BACKUP_PATH
+  ansible.builtin.lineinfile:
+    path: /usr/local/openldap/etc/openldap/slapd-cli.conf
+    regexp: "^BACKUP_PATH"
+    line: "BACKUP_PATH=\"{{ base_dir }}/{{ backup_dir }}\""
+
+- name: Configure rsyslog to collect slapd logs
+  ansible.builtin.lineinfile:
+    path: /etc/rsyslog.conf
+    regexp: "^local4"
+    line: "local4.*  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}"
+  notify:
+    - restart rsyslog 
 ...

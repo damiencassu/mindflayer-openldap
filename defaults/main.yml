@@ -5,4 +5,10 @@ ltb_repo_baseurl: https://ltb-project.org/rpm/openldap25/$releasever/$basearch
 ltb_repo_gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LTB-project
 ltb_repo_remote_gpgkey: https://ltb-project.org/documentation/_static/RPM-GPG-KEY-LTB-project
 
+base_dir: /tech/openldap
+data_dir: data
+log_dir: log
+backup_dir: backup
+
+log_file: slapd.log
 ...

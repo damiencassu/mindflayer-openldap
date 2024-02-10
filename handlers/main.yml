@@ -1,3 +1,9 @@
 ---
 # handlers file for mindflayer-openldap
+
+- name: restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+
 ...

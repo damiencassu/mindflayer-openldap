@@ -2,6 +2,7 @@ Mindflayer OpenLdap
 =========
 
 A simple Ansible role to deploy and manage OpenLDAP 2.5 (LTB) on CentOS9/RHEL9
+
 The deployed OpenLDAP package will be the one provided by the LDAP Tool Box (LTB) project (see https://www.ltb-project.org for more details)
 
 Requirements
@@ -29,6 +30,11 @@ _For instance, ltb_repo_baseurl is used when executing INSTALL tasks (when do_in
 | INSTALL | ltb_repo_baseurl | https://ltb-project.org/rpm/openldap25/$releasever/$basearch | LTB Repo base url to configure in yum repo file |
 | INSTALL | ltb_repo_gpgkey | file:///etc/pki/rpm-gpg/RPM-GPG-KEY-LTB-project | Local path where the LTB Repo GPG key is stored |
 | INSTALL | ltb_repo_remote_gpgkey | https://ltb-project.org/documentation/\_static/RPM-GPG-KEY-LTB-project | Remote URL where the LTB Repo GPG key can be downloaded |
+| INSTALL | base_dir | /tech/openldap | Root directory tree name where slapd directories will be created |
+| INSTALL | data_dir | data | Name of the directory which will contain slapd mdb database |
+| INSTALL | log_dir | log | Name of the directory which will contain slapd log files |
+| INSTALL | backup_dir | backup | Name of the directory which will contain slapd backups |
+| INSTALL | log_file | slapd.log | Name of the slapd log file |
 
 Dependencies
 ------------
@@ -56,4 +62,5 @@ Author Information
 ------------------
 
 Damien CASSU
+
 Official GitHub repository for this role: https://github.com/damiencassu/mindflayer-openldap
