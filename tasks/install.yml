@@ -1,0 +1,25 @@
+---
+# install tasks file for mindflayer-openldap
+
+- name: Declare and enable ltb yum repository
+  ansible.builtin.template:
+    src: ltb_repo.j2
+    dest: /etc/yum.repos.d/ltb-project.repo
+
+- name: Download ltb repo gpg key
+  ansible.builtin.get_url:
+      url: "{{ ltb_repo_remote_gpgkey }}"
+      dest: "{{ ltb_repo_gpgkey | regex_replace('^file://', '') }}"
+
+- name: Import ltb repo gpg key to rpm database
+  ansible.builtin.rpm_key:
+    key: "{{ ltb_repo_remote_gpgkey }}"
+      
+- name: Install OpenLDAP LTB 2.5 rpms
+  ansible.builtin.yum:
+    name: 
+      - openldap-ltb
+      - openldap-ltb-contrib-overlays
+      - openldap-ltb-mdb-utils
+    state: installed
+...

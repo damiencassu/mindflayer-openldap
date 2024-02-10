@@ -1,0 +1,12 @@
+---
+# main tasks file for mindflayer-openldap
+
+- name: display role startup message
+  ansible.builtin.debug:
+    msg: "Starting mindflayer-openldap Ansible role execution"
+
+- name: execute installation tasks if required
+  include_tasks: install.yml
+  when: do_install
+
+...
