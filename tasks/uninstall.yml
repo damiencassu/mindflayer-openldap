@@ -1,0 +1,68 @@
+---
+# uninstall tasks file for mindflayer-openldap
+
+- name: Stop and disable slapd-ltb service
+  ansible.builtin.service:
+    name: slapd-ltb
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: Delete backup scheduling in root crontab
+  ansible.builtin.cron:
+    name: Openldap backup job
+    job: "{{ base_dir }}/{{ backup_dir }}/backup_script.sh"
+    month: "{{ backup_cron_month }}"
+    day: "{{ backup_cron_day }}"
+    weekday: "{{ backup_cron_weekday }}"
+    hour: "{{ backup_cron_hour }}"
+    minute: "{{ backup_cron_minute }}"
+    state: absent
+
+- name: Remove slapd-cli script and other openldap utilities from root PATH
+  ansible.builtin.blockinfile:
+    block: |
+      PATH=$PATH:/usr/local/openldap/sbin
+      export PATH
+    marker: "# {mark} OPENLDAP-UTILITIES ANSIBLE MANAGED BLOCK"
+    path: ~/.bashrc
+    state: absent
+
+- name: Disable rsyslog openldap logs collection
+  ansible.builtin.lineinfile:
+    path: /etc/rsyslog.conf
+    search_string: "if $syslogfacility-text == 'local4' and $programname == 'slapd' then  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}"
+    state: absent
+  notify:
+    - restart rsyslog
+
+- name: Delete openldap logrotate
+  ansible.builtin.file:
+    path: /etc/logrotate.d/openldap
+    state: absent
+
+- name: Uninstall openldap LTB 2.5 rpms
+  ansible.builtin.yum:
+    name:
+      - openldap-ltb
+      - openldap-ltb-contrib-overlays
+      - openldap-ltb-mdb-utils
+    state: absent
+
+- name: Delete ltb yum repository and gpg key
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/yum.repos.d/ltb-project.repo
+    - "{{ ltb_repo_gpgkey | regex_replace('^file://', '') }}"
+
+- name: Delete openldap dedicated file system
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/local/openldap
+    - "{{ base_dir }}"
+      
+...

@@ -9,4 +9,8 @@
   include_tasks: install.yml
   when: do_install
 
+- name: execute uninstallation tasks if required
+  include_tasks: uninstall.yml
+  when: do_uninstall
+
 ...
