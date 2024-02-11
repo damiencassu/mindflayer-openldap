@@ -3,7 +3,8 @@
   hosts: localhost
   vars:
     - do_install: false
-    - do_uninstall: true 
+    - do_uninstall: true
+    - do_configure: false 
   roles:
     - mindflayer-openldap
 

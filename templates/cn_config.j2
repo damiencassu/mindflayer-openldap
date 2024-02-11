@@ -1,0 +1,50 @@
+dn: olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: {{ ol_suffix }}
+-
+replace: olcAccess
+olcAccess: to *  by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
+-
+delete: olcLimits
+-
+replace: olcRootDN
+olcRootDN: {{ ol_mdb_rootdn }},{{ ol_suffix }}
+-
+replace: olcRootPW
+olcRootPW: {{ ol_mdb_rootdn_pwd_hashed.stdout }}
+
+dn: olcDatabase={2}monitor,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: {{ ol_monitor_rootdn }}
+-
+replace: olcRootPW
+olcRootPW: {{ ol_monitor_rootdn_pwd_hashed.stdout }}
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: to *  by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
+-
+replace: olcRootDN
+olcRootDN: {{ ol_config_rootdn }}
+-
+replace: olcRootPW
+olcRootPW: {{ ol_config_rootdn_pwd_hashed.stdout }}
+
+dn: cn=config
+changetype: modify
+delete: olcSaslHost
+
+dn: cn=config
+replace: olcDisallows
+olcDisallows: bind_anon
+-
+replace: olcRequires
+olcRequires: authc
+
+dn: olcOverlay={0}ppolicy,olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcPPolicyDefault
+olcPPolicyDefault: cn=default,ou=ppolicies,{{ ol_suffix }}

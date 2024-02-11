@@ -13,4 +13,8 @@
   include_tasks: uninstall.yml
   when: do_uninstall
 
+- name: execute configuration tasks if required
+  include_tasks: configure.yml
+  when: do_configure
+
 ...

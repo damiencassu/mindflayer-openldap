@@ -1,0 +1,37 @@
+---
+# configure tasks file for mindflayer-openldap
+
+- name: Hash mdb rootdn password in argon2
+  ansible.builtin.command:
+    cmd: "/usr/local/openldap/sbin/slappasswd -o module-load=argon2 -h {ARGON2} -s {{ ol_mdb_rootdn_pwd }}"
+  register: ol_mdb_rootdn_pwd_hashed
+
+- name: Hash monitor rootdn password in argon2
+  ansible.builtin.command:
+    cmd: "/usr/local/openldap/sbin/slappasswd -o module-load=argon2 -h {ARGON2} -s {{ ol_monitor_rootdn_pwd }}"
+  register: ol_monitor_rootdn_pwd_hashed
+
+- name: Hash config rootdn password in argon2
+  ansible.builtin.command:
+    cmd: "/usr/local/openldap/sbin/slappasswd -o module-load=argon2 -h {ARGON2} -s {{ ol_config_rootdn_pwd }}"
+  register: ol_config_rootdn_pwd_hashed
+
+- name: Render ldif for configuration update
+  ansible.builtin.template:
+    src: cn_config.j2
+    dest: "{{ base_dir }}/{{ backup_dir }}/cn_config.ldif"
+
+- name: Update configuration in openldap
+  ansible.builtin.command:
+    cmd: "ldapmodify -Y EXTERNAL -H ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi -f {{ base_dir }}/{{ backup_dir }}/cn_config.ldif -c"
+  register: result
+  failed_when:
+    - result.rc != 0
+    - result.rc != 16
+
+- name: Clean up unused files
+  ansible.builtin.file:
+    path: "{{ base_dir }}/{{ backup_dir }}/cn_config.ldif"
+    state: absent
+      
+...

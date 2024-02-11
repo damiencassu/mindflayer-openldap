@@ -1,0 +1,11 @@
+---
+- name: Test playbook for OpenLDAP 2.5 LTB configuration
+  hosts: localhost
+  vars:
+    - do_install: false
+    - do_uninstall: false
+    - do_configure: true 
+  roles:
+    - mindflayer-openldap
+
+...

@@ -20,5 +20,16 @@ backup_cron_month: "*"
 backup_cron_day: "*"
 backup_cron_weekday: "*"
 backup_cron_hour: 03
-backup_cron_minute: 00  
+backup_cron_minute: 00
+
+# config related variables
+ol_suffix: dc=example,dc=fr
+ol_mdb_rootdn: cn=manager
+ol_monitor_rootdn: cn=monitor
+ol_config_rootdn: cn=config
+
+# default config password values - use ansible vault and a dedicated variable file in production
+ol_mdb_rootdn_pwd: managerPwd
+ol_monitor_rootdn_pwd: monitorPwd
+ol_config_rootdn_pwd: configPwd
 ...
