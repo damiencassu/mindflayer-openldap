@@ -10,6 +10,7 @@ base_dir: /tech/openldap
 data_dir: data
 log_dir: log
 backup_dir: backup
+cert_dir: cert
 
 # log related variables
 log_file: slapd.log
@@ -32,4 +33,13 @@ ol_config_rootdn: cn=config
 ol_mdb_rootdn_pwd: managerPwd
 ol_monitor_rootdn_pwd: monitorPwd
 ol_config_rootdn_pwd: configPwd
+
+# certificate and TLS related variables
+cert_pubkey: ldaps.crt
+cert_privkey: ldaps.key
+cert_csr: ldaps.csr
+cert_common_name: "*"
+cert_organization: openldap
+cert_country_code: FR
+
 ...

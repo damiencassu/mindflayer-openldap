@@ -12,6 +12,8 @@ This role has been tested with Ansible 2.14.13
 
 This role must be executed with root privileges
 
+This role supports SELinux
+
 Role Variables
 --------------
 
@@ -52,11 +54,19 @@ _For instance, ltb_repo_baseurl is used when executing INSTALL tasks (when do_in
 | CONFIG | ol_mdb_rootdn_pwd | managerPwd | Password of the admin account of the mdb database - must be provided in plaintext as it will be argon2 hashed at runtime - in production use ansible vault features |
 | CONFIG | ol_monitor_rootdn_pwd | monitorPwd | Password of the admin account of the monitor database - must be provided in plaintext as it will be argon2 hashed at runtime - in production use ansible vault features |
 | CONFIG | ol_config_rootdn_pwd | configPwd | Password of the admin account of the config database - must be provided in plaintext as it will be argon2 hashed at runtime - in production use ansible vault features |
+| CONFIG | cert_pubkey | ldaps.crt | Filename of the certificate to use for LDAPS endpoint |
+| CONFIG | cert_privkey | ldaps.key | Filename of the private key linked to the certificate to use for LDAPS endpoint |
+| CONFIG | cert_csr | ldaps.csr | Filename of the csr to generate |
+| CONFIG | cert_common_name | * | Common Name to use for the certificate, must be aligned with slapd configuration, Subject Alternative Name will be added with the same value |
+| CONFIG | cert_organization | openldap | Organization name to add to the certificate |
+| CONFIG | cert_country_code | FR | Country code to add to the certificate |
 
 Dependencies
 ------------
 
-Only Ansible builtin modules are used in this role.
+This role requires the following collections:
+* ansible.builtin
+* community.crypto (v2.14.0 or higher)
 
 Example Playbook
 ----------------

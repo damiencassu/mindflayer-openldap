@@ -1,6 +1,46 @@
 ---
 # configure tasks file for mindflayer-openldap
 
+- name: Create openldap dedicated cert folder
+  ansible.builtin.file:
+    path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}"
+    state: directory
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+    setype: usr_t
+
+- name: Generate a new private key 
+  community.crypto.openssl_privatekey:
+    path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_privkey }}"
+    type: RSA
+    size: 4096
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+
+- name: Generate a certificate signing request
+  community.crypto.openssl_csr:
+    path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_csr }}"
+    privatekey_path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_privkey }}"
+    common_name: "{{ cert_common_name }}"
+    country_name: "{{ cert_country_code }}"
+    organization_name: "{{ cert_organization }}"
+    subject_alt_name: "DNS:{{ cert_common_name }}"
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+
+- name: Generate a self signed certificate
+  community.crypto.x509_certificate:
+    path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_pubkey }}"
+    privatekey_path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_privkey }}"
+    csr_path: "/usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_csr }}"
+    provider: selfsigned
+    mode: ug+rw
+    owner: ldap
+    group: ldap
+
 - name: Hash mdb rootdn password in argon2
   ansible.builtin.command:
     cmd: "/usr/local/openldap/sbin/slappasswd -o module-load=argon2 -h {ARGON2} -s {{ ol_mdb_rootdn_pwd }}"

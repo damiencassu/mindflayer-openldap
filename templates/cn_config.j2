@@ -43,6 +43,21 @@ olcDisallows: bind_anon
 -
 replace: olcRequires
 olcRequires: authc
+-
+replace: olcTLSCACertificateFile
+olcTLSCACertificateFile: /usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_pubkey }}
+-
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_pubkey }}
+-
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /usr/local/openldap/etc/openldap/{{ cert_dir }}/{{ cert_privkey }}
+-
+replace: olcTLSCipherSuite
+olcTLSCipherSuite: HIGH
+-
+replace: olcTLSProtocolMin
+olcTLSProtocolMin: 3.3
 
 dn: olcOverlay={0}ppolicy,olcDatabase={1}mdb,cn=config
 changetype: modify
