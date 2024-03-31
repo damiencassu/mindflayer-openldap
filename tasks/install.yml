@@ -71,13 +71,25 @@
     regexp: "^BACKUP_PATH"
     line: "BACKUP_PATH=\"{{ base_dir }}/{{ backup_dir }}\""
 
-- name: Reconfigure rsyslog openldap logs collection
+- name: Disable rsyslog default openldap logs collection
   ansible.builtin.lineinfile:
     path: /etc/rsyslog.conf
     regexp: "^local4"
-    line: "if $syslogfacility-text == 'local4' and $programname == 'slapd' then  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}"
+    state: absent
   notify:
-    - restart rsyslog 
+    - restart rsyslog
+
+- name: Reconfigure rsyslog openldap logs collection
+  ansible.builtin.blockinfile:
+    block: |
+      $umask 0000
+      $FileCreateMode 0644
+      if $syslogfacility-text == 'local4' and $programname == 'slapd' then  -{{ base_dir  }}/{{ log_dir }}/{{ log_file }}
+    marker: "# {mark} OPENLDAP-LOG ANSIBLE MANAGED BLOCK"
+    path: /etc/rsyslog.conf
+    state: present
+  notify:
+    - restart rsyslog
 
 - name: Reconfigure openldap logrotate
   ansible.builtin.lineinfile:
